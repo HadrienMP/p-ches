@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, text)
+import Element exposing (layout, text)
+import Html exposing (Html)
 
 
 main : Program () Model Msg
@@ -59,4 +60,4 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    text "Peaches"
+    layout [] <| Element.column [] [ text "Coucou", text "tata" ]
