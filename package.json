@@ -1,0 +1,23 @@
+{
+  "name": "peaches",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "elm make src/Main.elm --optimize --output public/js/elm.js",
+    "start": "serve public",
+    "dev": "elm-live src/Main.elm -s public/index.html --hot --open",
+    "test": "elm-test-rs",
+    "postinstall": "elm-tooling install"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "elm-tooling": "^1.7.0",
+    "gitmoji-cli": "^4.13.0"
+  },
+  "dependencies": {
+    "elm-live": "^4.0.2",
+    "serve": "^13.0.2"
+  }
+}
