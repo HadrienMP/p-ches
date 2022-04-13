@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Element exposing (Element, alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, text, width)
@@ -13,6 +13,7 @@ import Tempo exposing (Tempo(..))
 import Tempo exposing (getBpm)
 import Tempo exposing (msBetweenQuarterNotes)
 
+port play : String -> Cmd msg
 
 main : Program () Model Msg
 main =
@@ -53,12 +54,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick _ ->
-            ( { model | sixteenth = modBy 16 model.sixteenth + 1 }, Cmd.none )
+            let
+                nextSixteenth = modBy 16 model.sixteenth + 1
+                isQuarter = modBy 4 nextSixteenth == 1
+                command = if isQuarter then play "toto" else Cmd.none
+            in
+            ( { model | sixteenth = modBy 16 model.sixteenth + 1 }, command )
 
 
 
 -- Subscriptions
 
+tempo : Tempo
 tempo = BPM 120
 
 subscriptions : Model -> Sub Msg
@@ -105,6 +112,7 @@ view model =
             [ title
             , displayNotes model
             , text <| "Tempo: " ++ (String.fromInt (getBpm tempo))
+            , Element.html <| Html.audio [] [Html.source [ Html.Attributes.type_ "audio/wav", Html.Attributes.src "/sound/CH.wav"] []]
             ]
 
 
@@ -131,7 +139,7 @@ displayNote model note =
 
           else
             Element.Font.center
-        , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
+        , if note.quarter then paddingEach { top = 10, left = 8, right = 8, bottom = 8 } else padding 8
         , if note.quarter then
             Element.Font.size 20
 

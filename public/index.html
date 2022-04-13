@@ -10,9 +10,14 @@
 
 <body>
     <main></main>
+    <audio id="sound-CH"><source src="/sound/CH.wav" type="audio/wav"></audio>
     <script src="/js/elm.js"></script>
     <script>
         const app = Elm.Main.init({ node: document.querySelector('main') })
+        const closedHat = document.getElementById('sound-CH');        
+        app.ports.play.subscribe(soundName => {
+            closedHat.play();
+        });
     </script>
 </body>
 
