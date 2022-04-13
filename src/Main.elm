@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, text, width)
+import Element exposing (Element, alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, text, width)
 import Element.Background
 import Element.Border
 import Element.Font
@@ -66,7 +66,15 @@ subscriptions _ =
 -- View
 
 
-subdivisions =
+type alias Note =
+    { sixteenth : Int
+    , label : String
+    , quarter : Bool
+    }
+
+
+notes : List Note
+notes =
     List.range 1 16
         |> List.map
             (\sixteenth ->
@@ -76,8 +84,8 @@ subdivisions =
                         sixteenth // 4 |> (+) 1 |> String.fromInt
 
                     else
-                        ""
-                , quarterNote = modBy 4 sixteenth == 1
+                        modBy 4 (sixteenth - 1) + 1 |> String.fromInt
+                , quarter = modBy 4 sixteenth == 1
                 }
             )
 
@@ -93,31 +101,36 @@ view model =
         column [ centerY, centerX, spacing 100 ]
             [ title
             , row [ spaceEvenly, width fill, centerX ]
-                (subdivisions
-                    |> List.map
-                        (\note ->
-                            el
-                                [ Element.Font.center
-                                , Element.Border.solid
-                                , Element.Border.color white
-                                , if note.quarterNote then
-                                    Element.Border.width 2
-
-                                  else
-                                    Element.Border.width 1
-                                , Element.Border.rounded 10
-                                , if note.sixteenth == model.sixteenth then
-                                    Element.Background.color yellow
-
-                                  else
-                                    Element.Font.center
-                                , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
-                                ]
-                            <|
-                                text note.label
-                        )
-                )
+                (notes |> List.map (displayNote model))
             ]
+
+
+displayNote : Model -> Note -> Element Msg
+displayNote model note =
+    el
+        [ Element.Font.center
+        , Element.Border.solid
+        , Element.Border.color white
+        , if note.quarter then
+            Element.Border.width 2
+
+          else
+            Element.Border.width 1
+        , Element.Border.rounded 10
+        , if note.sixteenth == model.sixteenth then
+            Element.Background.color yellow
+
+          else
+            Element.Font.center
+        , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
+        , if note.quarter then
+            Element.Font.size 20
+
+          else
+            Element.Font.size 10
+        ]
+    <|
+        text note.label
 
 
 title : Element.Element Msg
