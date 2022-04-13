@@ -131,23 +131,18 @@ notes =
 
 view : Model -> Html Msg
 view model =
-    layout
-        [ htmlAttribute <| style "background-color" "#4158D0"
-        , htmlAttribute <| style "background-image" "linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%)"
-        , Element.Font.color white
-        ]
-    <|
-        column [ centerY, centerX, spacing 100 ]
+    layout [ Element.Font.color white ] <|
+        column [ centerY, centerX, spacing 60, paddingXY 10 28 ]
             [ title
             , displayNotes model
-            , text <| "Tempo: " ++ String.fromInt (getBpm tempo)
+            , el [ centerX, Element.Font.family [ Element.Font.typeface "Permanent Marker" ] ] <| text <| "Tempo: " ++ String.fromInt (getBpm tempo)
             , Element.html <| Html.audio [] [ Html.source [ Html.Attributes.type_ "audio/wav", Html.Attributes.src "/sound/CH.wav" ] [] ]
             ]
 
 
 displayNotes : Model -> Element Msg
 displayNotes model =
-    row [ spaceEvenly, width fill, centerX ]
+    row [ spacing 4, width fill, centerX ]
         (notes |> List.map (displayNote model))
 
 
@@ -189,17 +184,17 @@ title =
         [ centerX
         , width shrink
         ]
-        [ image [ width <| px 180 ] { src = "/img/peach.png", description = "peach" }
+        [ image [ width <| px 100 ] { src = "/img/peach.png", description = "peach" }
         , el
             [ Element.Font.bold
             , Element.Region.heading 1
-            , Element.Font.size 100
+            , Element.Font.size 60
             , Element.Font.family
                 [ Element.Font.external { url = "https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap", name = "Permanent Marker" }
                 , Element.Font.sansSerif
                 ]
             , alignBottom
-            , moveUp 50
+            , moveUp 30
             , rotate <| degrees -10
             ]
           <|
