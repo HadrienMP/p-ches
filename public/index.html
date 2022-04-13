@@ -11,12 +11,27 @@
 <body>
     <main></main>
     <audio id="sound-CH"><source src="/sound/CH.wav" type="audio/wav"></audio>
+    <audio id="sound-OH"><source src="/sound/OH.wav" type="audio/wav"></audio>
+    <audio id="sound-stab">
+        <source src="/sound/stab.mp3" type="audio/mp3">
+        <source src="/sound/stab.wav" type="audio/wav">
+    </audio>
     <script src="/js/elm.js"></script>
     <script>
         const app = Elm.Main.init({ node: document.querySelector('main') })
-        const closedHat = document.getElementById('sound-CH');        
+        const closedHat = document.getElementById('sound-CH');
+        const openHat = document.getElementById('sound-OH');
+        const stab = document.getElementById('sound-stab');
         app.ports.play.subscribe(soundName => {
-            closedHat.play();
+            if (soundName === 'OH') {
+                openHat.play();
+            } else if (soundName === 'stab') {
+                stab.pause();
+                stab.currentTime = 0;
+                stab.play();
+            } else {
+                closedHat.play();
+            }
         });
     </script>
 </body>
