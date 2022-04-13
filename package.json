@@ -6,7 +6,7 @@
   "scripts": {
     "build": "elm make src/Main.elm --optimize --output public/js/elm.js",
     "start": "serve public",
-    "dev": "elm-live src/Main.elm -d ./public/ --open -- --output public/js/elm.js",
+    "dev": "elm-live src/Main.elm -d ./public/ --open -- --output public/js/elm.js --debug",
     "test": "elm-test-rs",
     "postinstall": "elm-tooling install"
   },

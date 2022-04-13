@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Element exposing (alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rotate, row, shrink, spaceEvenly, spacing, text, width)
-import Element.Background
 import Element.Border
 import Element.Font
 import Element.Region exposing (description)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
+import Time
+import Element.Background
 
 
 main : Program () Model Msg
@@ -25,11 +26,11 @@ main =
 
 
 type alias Model =
-    {}
+    { sixteenth : Int }
 
 
 type Msg
-    = Noop
+    = Tick Time.Posix
 
 
 
@@ -38,7 +39,7 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { sixteenth = 1 }, Cmd.none )
 
 
 
@@ -47,7 +48,9 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        Tick _ ->
+            ( { model | sixteenth = (modBy 16 (model.sixteenth)) + 1 }, Cmd.none )
 
 
 
@@ -55,12 +58,27 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+subscriptions _ =
+    Time.every 500 Tick
 
 
 
 -- View
+
+
+subdivisions =
+    List.range 1 16
+        |> List.map
+            (\a ->
+                { sixteenth = a
+                , label =
+                    if modBy 4 a == 1 then
+                        a // 4 |> (+) 1 |> String.fromInt
+
+                    else
+                        ""
+                }
+            )
 
 
 view : Model -> Html Msg
@@ -74,23 +92,27 @@ view model =
         column [ centerY, centerX, spacing 100 ]
             [ title
             , row [ spaceEvenly, width fill, centerX ]
-                [ division "1"
-                , subdivision
-                , subdivision
-                , subdivision
-                , division "2"
-                , subdivision
-                , subdivision
-                , subdivision
-                , division "3"
-                , subdivision
-                , subdivision
-                , subdivision
-                , division "4"
-                , subdivision
-                , subdivision
-                , subdivision
-                ]
+                (subdivisions
+                    |> List.map
+                        (\note ->
+                            el
+                                [ Element.Font.center
+                                , Element.Border.solid
+                                , Element.Border.color white
+                                , Element.Border.width 2
+                                , Element.Border.rounded 10
+                                , if note.sixteenth == model.sixteenth then
+                                    Element.Background.color yellow
+
+                                  else
+                                    Element.Background.color <| rgb 0 0 0
+                                , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
+                                ]
+                            <|
+                                text note.label
+                        )
+                )
+            , text <| String.fromInt model.sixteenth
             ]
 
 
@@ -127,17 +149,17 @@ title =
         [ centerX
         , width shrink
         ]
-        [ image [ width <| px 160 ] { src = "/img/peach.png", description = "peach" }
+        [ image [ width <| px 180 ] { src = "/img/peach.png", description = "peach" }
         , el
             [ Element.Font.bold
-            , Element.Font.size 80
+            , Element.Region.heading 1
+            , Element.Font.size 100
             , Element.Font.family
-                [ Element.Font.external { url = "https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap", name = "Rock Salt" }
+                [ Element.Font.external { url = "https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap", name = "Permanent Marker" }
                 , Element.Font.sansSerif
                 ]
             , alignBottom
             , moveUp 50
-            , moveRight 20
             , rotate <| degrees -10
             ]
           <|
@@ -148,3 +170,7 @@ title =
 white : Element.Color
 white =
     rgb 255 255 255
+
+yellow : Element.Color
+yellow =
+    rgb 255 203 113
