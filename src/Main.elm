@@ -12,6 +12,8 @@ import Html.Attributes exposing (style)
 import Json.Decode
 import Tempo exposing (Tempo(..), getBpm, msBetweenQuarterNotes)
 import Time
+import Element exposing (clip)
+import Element exposing (clipX)
 
 
 port play : String -> Cmd msg
@@ -131,7 +133,7 @@ notes =
 
 view : Model -> Html Msg
 view model =
-    layout [ Element.Font.color white ] <|
+    layout [ Element.Font.color white, clipX ] <|
         column [ centerY, centerX, spacing 60, paddingXY 10 28 ]
             [ title
             , displayNotes model
