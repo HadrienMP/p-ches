@@ -9,6 +9,9 @@ import Element.Region exposing (description)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Time
+import Tempo exposing (Tempo(..))
+import Tempo exposing (getBpm)
+import Tempo exposing (msBetweenQuarterNotes)
 
 
 main : Program () Model Msg
@@ -56,10 +59,11 @@ update msg model =
 
 -- Subscriptions
 
+tempo = BPM 120
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every 500 Tick
+    Time.every (toFloat <| msBetweenQuarterNotes tempo) Tick
 
 
 
@@ -89,7 +93,6 @@ notes =
                 }
             )
 
-
 view : Model -> Html Msg
 view model =
     layout
@@ -100,9 +103,15 @@ view model =
     <|
         column [ centerY, centerX, spacing 100 ]
             [ title
-            , row [ spaceEvenly, width fill, centerX ]
-                (notes |> List.map (displayNote model))
+            , displayNotes model
+            , text <| "Tempo: " ++ (String.fromInt (getBpm tempo))
             ]
+
+
+displayNotes : Model -> Element Msg
+displayNotes model =
+    row [ spaceEvenly, width fill, centerX ]
+      (notes |> List.map (displayNote model))
 
 
 displayNote : Model -> Note -> Element Msg
