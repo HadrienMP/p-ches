@@ -2,13 +2,14 @@ module Main exposing (..)
 
 import Browser
 import Element exposing (alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rotate, row, shrink, spaceEvenly, spacing, text, width)
+import Element.Background
 import Element.Border
 import Element.Font
 import Element.Region exposing (description)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Time
-import Element.Background
+import Element exposing (rgb255)
 
 
 main : Program () Model Msg
@@ -50,7 +51,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick _ ->
-            ( { model | sixteenth = (modBy 16 (model.sixteenth)) + 1 }, Cmd.none )
+            ( { model | sixteenth = modBy 16 model.sixteenth + 1 }, Cmd.none )
 
 
 
@@ -105,42 +106,14 @@ view model =
                                     Element.Background.color yellow
 
                                   else
-                                    Element.Background.color <| rgb 0 0 0
+                                    Element.Font.center
                                 , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
                                 ]
                             <|
                                 text note.label
                         )
                 )
-            , text <| String.fromInt model.sixteenth
             ]
-
-
-division : String -> Element.Element Msg
-division s =
-    el
-        [ Element.Font.center
-        , Element.Border.solid
-        , Element.Border.color white
-        , Element.Border.width 2
-        , Element.Border.rounded 10
-        , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
-        ]
-    <|
-        text s
-
-
-subdivision : Element.Element Msg
-subdivision =
-    el
-        [ Element.Font.center
-        , Element.Border.solid
-        , Element.Border.color white
-        , Element.Border.width 1
-        , Element.Border.rounded 10
-        , paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
-        ]
-        none
 
 
 title : Element.Element Msg
@@ -169,8 +142,9 @@ title =
 
 white : Element.Color
 white =
-    rgb 255 255 255
+    rgb255 255 255 255
+
 
 yellow : Element.Color
 yellow =
-    rgb 255 203 113
+    rgb255 255 203 113

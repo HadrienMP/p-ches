@@ -16563,10 +16563,6 @@ var $mdgriffith$elm_ui$Element$paddingEach = function (_v0) {
 				left));
 	}
 };
-var $mdgriffith$elm_ui$Element$rgb = F3(
-	function (r, g, b) {
-		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, r, g, b, 1);
-	});
 var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
 var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 	return A2(
@@ -16796,7 +16792,11 @@ var $author$project$Main$title = A2(
 				]),
 			$mdgriffith$elm_ui$Element$text('Pêches'))
 		]));
-var $author$project$Main$white = A3($mdgriffith$elm_ui$Element$rgb, 255, 255, 255);
+var $mdgriffith$elm_ui$Element$rgb255 = F3(
+	function (red, green, blue) {
+		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
+	});
+var $author$project$Main$white = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
 	function (a, b, c, d, e) {
 		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
@@ -16813,7 +16813,7 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 			v,
 			v));
 };
-var $author$project$Main$yellow = A3($mdgriffith$elm_ui$Element$rgb, 255, 203, 113);
+var $author$project$Main$yellow = A3($mdgriffith$elm_ui$Element$rgb255, 255, 203, 113);
 var $author$project$Main$view = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$layout,
@@ -16856,16 +16856,13 @@ var $author$project$Main$view = function (model) {
 										$mdgriffith$elm_ui$Element$Border$color($author$project$Main$white),
 										$mdgriffith$elm_ui$Element$Border$width(2),
 										$mdgriffith$elm_ui$Element$Border$rounded(10),
-										_Utils_eq(note.sixteenth, model.sixteenth) ? $mdgriffith$elm_ui$Element$Background$color($author$project$Main$yellow) : $mdgriffith$elm_ui$Element$Background$color(
-										A3($mdgriffith$elm_ui$Element$rgb, 0, 0, 0)),
+										_Utils_eq(note.sixteenth, model.sixteenth) ? $mdgriffith$elm_ui$Element$Background$color($author$project$Main$yellow) : $mdgriffith$elm_ui$Element$Font$center,
 										$mdgriffith$elm_ui$Element$paddingEach(
 										{bottom: 8, left: 8, right: 8, top: 10})
 									]),
 								$mdgriffith$elm_ui$Element$text(note.label));
 						},
-						$author$project$Main$subdivisions)),
-					$mdgriffith$elm_ui$Element$text(
-					$elm$core$String$fromInt(model.sixteenth))
+						$author$project$Main$subdivisions))
 				])));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
