@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rotate, row, shrink, spaceEvenly, spacing, text, width)
+import Element exposing (alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, text, width)
 import Element.Background
 import Element.Border
 import Element.Font
@@ -9,7 +9,6 @@ import Element.Region exposing (description)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Time
-import Element exposing (rgb255)
 
 
 main : Program () Model Msg
@@ -70,14 +69,15 @@ subscriptions _ =
 subdivisions =
     List.range 1 16
         |> List.map
-            (\a ->
-                { sixteenth = a
+            (\sixteenth ->
+                { sixteenth = sixteenth
                 , label =
-                    if modBy 4 a == 1 then
-                        a // 4 |> (+) 1 |> String.fromInt
+                    if modBy 4 sixteenth == 1 then
+                        sixteenth // 4 |> (+) 1 |> String.fromInt
 
                     else
                         ""
+                , quarterNote = modBy 4 sixteenth == 1
                 }
             )
 
@@ -100,7 +100,11 @@ view model =
                                 [ Element.Font.center
                                 , Element.Border.solid
                                 , Element.Border.color white
-                                , Element.Border.width 2
+                                , if note.quarterNote then
+                                    Element.Border.width 2
+
+                                  else
+                                    Element.Border.width 1
                                 , Element.Border.rounded 10
                                 , if note.sixteenth == model.sixteenth then
                                     Element.Background.color yellow
