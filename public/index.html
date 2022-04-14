@@ -23,20 +23,26 @@
     <script src="/js/elm.js"></script>
     <script>
         const app = Elm.Main.init({ node: document.querySelector('main') })
+        
         var closedHat = new Howl({ src: ['/sound/CH.wav'] });
         var openHat = new Howl({ src: ['/sound/OH.wav'] });
         var stab = new Howl({ src: ['/sound/stab.wav'] });
+        
         app.ports.play.subscribe(soundName => {
             if (soundName === 'OH') {
-                openHat.play();
+                play(openHat);
             } else if (soundName === 'stab') {
-                stab.pause();
-                stab.currentTime = 0;
-                stab.play();
+                play(stab);
             } else {
-                closedHat.play();
+                play(closedHat)
             }
         });
+
+        const play = (sound) => {
+            sound.pause();
+            sound.currentTime = 0;
+            sound.play();
+        };
     </script>
 </body>
 

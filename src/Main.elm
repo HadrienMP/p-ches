@@ -2,18 +2,17 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events
-import Element exposing (Element, alignBottom, centerX, centerY, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, text, width)
+import Element exposing (Element, alignBottom, centerX, centerY, clip, clipX, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, spacingXY, text, width)
 import Element.Background
 import Element.Border
 import Element.Font
+import Element.Input exposing (button)
 import Element.Region exposing (description)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode
 import Tempo exposing (Tempo(..), getBpm, msBetweenQuarterNotes)
 import Time
-import Element exposing (clip)
-import Element exposing (clipX)
 
 
 port play : String -> Cmd msg
@@ -33,13 +32,20 @@ main =
 -- Model
 
 
-type alias Model =
+type alias OnModel =
     { sixteenth : Int }
+
+
+type Model
+    = On OnModel
+    | Off
 
 
 type Msg
     = Tick Time.Posix
     | Stab
+    | Stop
+    | Start
 
 
 
@@ -48,7 +54,7 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { sixteenth = 1 }, Cmd.none )
+    ( Off, Cmd.none )
 
 
 
@@ -57,11 +63,11 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Tick _ ->
+    case ( model, msg ) of
+        ( On on, Tick _ ) ->
             let
                 nextSixteenth =
-                    modBy 16 model.sixteenth + 1
+                    modBy 16 on.sixteenth + 1
 
                 isQuarter =
                     modBy 4 nextSixteenth == 1
@@ -79,10 +85,19 @@ update msg model =
                     else
                         Cmd.none
             in
-            ( { model | sixteenth = modBy 16 model.sixteenth + 1 }, command )
+            ( On { on | sixteenth = nextSixteenth }, command )
 
-        Stab ->
+        ( On _, Stab ) ->
             ( model, play "stab" )
+
+        ( On _, Stop ) ->
+            ( Off, Cmd.none )
+
+        ( Off, Start ) ->
+            ( On { sixteenth = 1 }, play "OH" )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 
@@ -133,51 +148,112 @@ notes =
 
 view : Model -> Html Msg
 view model =
-    layout [ Element.Font.color white, clipX ] <|
+    layout
+        [ Element.Font.color white
+        , clipX
+        , Element.Font.family
+            [ Element.Font.external
+                { url = "https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap"
+                , name = "Permanent Marker"
+                }
+            , Element.Font.sansSerif
+            ]
+        ]
+    <|
         column [ centerY, centerX, spacing 60, paddingXY 10 28 ]
             [ title
+            , row [ centerX, spacingXY 40 0 ]
+                [ button
+                    [ Element.Border.solid
+                    , Element.Border.color white
+                    , Element.Border.rounded 10
+                    , Element.Border.width 2
+                    , padding 10
+                    ]
+                    { onPress =
+                        case model of
+                            On _ ->
+                                Just Stop
+
+                            Off ->
+                                Just Start
+                    , label = 
+                        case model of
+                            On _ ->
+                                text "Stop"
+
+                            Off ->
+                                text "Start"
+                    }
+                , text <| "Tempo: " ++ String.fromInt (getBpm tempo)
+                ]
             , displayNotes model
-            , el [ centerX, Element.Font.family [ Element.Font.typeface "Permanent Marker" ] ] <| text <| "Tempo: " ++ String.fromInt (getBpm tempo)
-            , Element.html <| Html.audio [] [ Html.source [ Html.Attributes.type_ "audio/wav", Html.Attributes.src "/sound/CH.wav" ] [] ]
             ]
 
 
 displayNotes : Model -> Element Msg
 displayNotes model =
-    row [ spacing 4, width fill, centerX ]
+    row [ spacing 4, width fill, centerX, Element.Font.family [ Element.Font.sansSerif ] ]
         (notes |> List.map (displayNote model))
 
 
 displayNote : Model -> Note -> Element Msg
 displayNote model note =
-    el
-        [ Element.Font.center
-        , Element.Border.solid
-        , Element.Border.color white
-        , if note.quarter then
-            Element.Border.width 2
+    case model of
+        On on ->
+            el
+                [ Element.Font.center
+                , Element.Border.solid
+                , Element.Border.color white
+                , Element.Border.rounded 10
+                , if note.quarter then
+                    Element.Border.width 2
 
-          else
-            Element.Border.width 1
-        , Element.Border.rounded 10
-        , if note.sixteenth == model.sixteenth then
-            Element.Background.color yellow
+                  else
+                    Element.Border.width 1
+                , if note.sixteenth == on.sixteenth then
+                    Element.Background.color yellow
 
-          else
-            Element.Font.center
-        , if note.quarter then
-            paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
+                  else
+                    Element.Font.center
+                , if note.quarter then
+                    paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
 
-          else
-            padding 8
-        , if note.quarter then
-            Element.Font.size 20
+                  else
+                    padding 8
+                , if note.quarter then
+                    Element.Font.size 20
 
-          else
-            Element.Font.size 10
-        ]
-    <|
-        text note.label
+                  else
+                    Element.Font.size 10
+                ]
+            <|
+                text note.label
+
+        Off ->
+            el
+                [ Element.Font.center
+                , Element.Border.solid
+                , Element.Border.color white
+                , if note.quarter then
+                    Element.Border.width 2
+
+                  else
+                    Element.Border.width 1
+                , Element.Border.rounded 10
+                , if note.quarter then
+                    paddingEach { top = 10, left = 8, right = 8, bottom = 8 }
+
+                  else
+                    padding 8
+                , if note.quarter then
+                    Element.Font.size 20
+
+                  else
+                    Element.Font.size 10
+                ]
+            <|
+                text note.label
 
 
 title : Element.Element Msg
@@ -191,10 +267,6 @@ title =
             [ Element.Font.bold
             , Element.Region.heading 1
             , Element.Font.size 60
-            , Element.Font.family
-                [ Element.Font.external { url = "https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap", name = "Permanent Marker" }
-                , Element.Font.sansSerif
-                ]
             , alignBottom
             , moveUp 30
             , rotate <| degrees -10
