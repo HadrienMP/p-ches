@@ -2,14 +2,13 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events
-import Element exposing (Element, alignBottom, centerX, centerY, clip, clipX, column, el, fill, htmlAttribute, image, layout, moveLeft, moveRight, moveUp, none, padding, paddingEach, paddingXY, px, rgb, rgb255, rotate, row, shrink, spaceEvenly, spacing, spacingXY, text, width)
+import Element exposing (..)
 import Element.Background
 import Element.Border
 import Element.Font
 import Element.Input exposing (button)
-import Element.Region exposing (description)
+import Element.Region
 import Html exposing (Html)
-import Html.Attributes exposing (style)
 import Json.Decode
 import Tempo exposing (Tempo(..), getBpm, msBetweenQuarterNotes)
 import Time
