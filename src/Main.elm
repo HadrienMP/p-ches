@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events
+import ColorPalette exposing (white, yellow)
 import Element exposing (..)
 import Element.Background
 import Element.Border
@@ -176,7 +177,7 @@ view model =
 
                             Off ->
                                 Just Start
-                    , label = 
+                    , label =
                         case model of
                             On _ ->
                                 text "Stop"
@@ -273,13 +274,3 @@ title =
           <|
             text "Pêches"
         ]
-
-
-white : Element.Color
-white =
-    rgb255 255 255 255
-
-
-yellow : Element.Color
-yellow =
-    rgb255 255 203 113
