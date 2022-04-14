@@ -258,22 +258,28 @@ commonNoteStyle note =
     , Element.Border.solid
     , Element.Border.color white
     , Element.Border.rounded 100
-    , if note.quarter then
-        Element.Border.width 2
-
-      else
-        Element.Border.width 1
-    , if note.quarter then
-        paddingEach { top = 10, left = 13, right = 13, bottom = 8 }
-
-      else
-        paddingXY 10 8
-    , if note.quarter then
-        Element.Font.size 20
-
-      else
-        Element.Font.size 10
     ]
+        ++ (case modBy 4 (note.sixteenth - 1) of
+                0 ->
+                    [ Element.Border.width 4
+                    , paddingEach { top = 10, left = 13, right = 13, bottom = 8 }
+                    , Element.Font.size 20
+                    , Element.Font.bold
+                    ]
+
+                2 ->
+                    [ Element.Border.width 2
+                    , paddingXY 10 8
+                    , Element.Font.size 14
+                    , Element.Font.bold
+                    ]
+
+                _ ->
+                    [ Element.Border.width 1
+                    , paddingXY 10 8
+                    , Element.Font.size 10
+                    ]
+           )
 
 
 currentNoteStyling : Model -> Note -> List (Attribute Msg)
