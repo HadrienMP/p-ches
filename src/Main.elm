@@ -10,7 +10,7 @@ import Element.Font
 import Element.Input exposing (button)
 import Element.Region
 import Html exposing (Html)
-import Json.Decode
+import Json.Decode exposing (succeed)
 import Tempo exposing (Tempo(..), getBpm, msBetweenQuarterNotes)
 import Time
 
@@ -44,8 +44,7 @@ type Model
 type Msg
     = Tick Time.Posix
     | Stab
-    | Stop
-    | Start
+    | StartStop
 
 
 
@@ -87,13 +86,13 @@ update msg model =
             in
             ( On { on | sixteenth = nextSixteenth }, command )
 
-        ( On _, Stab ) ->
+        ( _, Stab ) ->
             ( model, play "stab" )
 
-        ( On _, Stop ) ->
+        ( On _, StartStop ) ->
             ( Off, Cmd.none )
 
-        ( Off, Start ) ->
+        ( Off, StartStop ) ->
             ( On { sixteenth = 1 }, play "OH" )
 
         _ ->
@@ -113,7 +112,21 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ Time.every (toFloat <| msBetweenQuarterNotes tempo) Tick
-        , Browser.Events.onKeyDown (Json.Decode.succeed Stab)
+        , Browser.Events.onKeyDown
+            (Json.Decode.field "key" Json.Decode.string
+                |> Json.Decode.andThen
+                    (\key ->
+                        case key of
+                            "Enter" ->
+                                succeed Stab
+
+                            " " ->
+                                succeed StartStop
+
+                            _ ->
+                                Json.Decode.fail "Nope"
+                    )
+            )
         ]
 
 
@@ -158,13 +171,7 @@ playStopButon model =
             , Element.Border.width 2
             , padding 10
             ]
-            { onPress =
-                case model of
-                    On _ ->
-                        Just Stop
-
-                    Off ->
-                        Just Start
+            { onPress = Just StartStop
             , label =
                 case model of
                     On _ ->
