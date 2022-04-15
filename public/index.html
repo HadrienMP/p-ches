@@ -33,17 +33,16 @@
         
         app.ports.play.subscribe(soundName => {
             if (soundName === 'OH') {
-                play(openHat);
+                openHat.play();
             } else if (soundName === 'stab') {
-                play(stab);
+                stab.play();
             } else {
-                play(closedHat)
+                closedHat.play()
             }
         });
 
         const play = (sound) => {
-            sound.pause();
-            sound.currentTime = 0;
+            sound.stop();
             sound.play();
         };
     </script>
