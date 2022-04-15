@@ -6,12 +6,13 @@ import ColorPalette exposing (white, yellow)
 import Element exposing (..)
 import Element.Background
 import Element.Border
-import Element.Font
+import Element.Font exposing (center)
 import Element.Input exposing (button)
 import Element.Region
 import Html exposing (Html)
 import Json.Decode exposing (succeed)
-import Tempo exposing (Tempo(..), getBpm, msBetweenQuarterNotes)
+import String exposing (fromInt)
+import Tempo exposing (Tempo(..), getBpm, msBetweenSixteenthNotes)
 import Time
 
 
@@ -36,15 +37,22 @@ type alias OnModel =
     { sixteenth : Int }
 
 
-type Model
+type State
     = On OnModel
     | Off
+
+
+type alias Model =
+    { state : State
+    , tempo : Tempo
+    }
 
 
 type Msg
     = Tick Time.Posix
     | Stab
     | StartStop
+    | ChangeTempo Float
 
 
 
@@ -53,7 +61,7 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Off, Cmd.none )
+    ( { state = Off, tempo = BPM 120 }, Cmd.none )
 
 
 
@@ -62,7 +70,7 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( model, msg ) of
+    case ( model.state, msg ) of
         ( On on, Tick _ ) ->
             let
                 nextSixteenth =
@@ -84,16 +92,19 @@ update msg model =
                     else
                         Cmd.none
             in
-            ( On { on | sixteenth = nextSixteenth }, command )
+            ( { model | state = On { on | sixteenth = nextSixteenth } }, command )
 
         ( _, Stab ) ->
             ( model, play "stab" )
 
         ( On _, StartStop ) ->
-            ( Off, Cmd.none )
+            ( { model | state = Off }, Cmd.none )
 
         ( Off, StartStop ) ->
-            ( On { sixteenth = 1 }, play "OH" )
+            ( { model | state = On { sixteenth = 1 } }, play "OH" )
+
+        ( _, ChangeTempo float ) ->
+            ( { model | tempo = float |> floor |> BPM }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -103,15 +114,10 @@ update msg model =
 -- Subscriptions
 
 
-tempo : Tempo
-tempo =
-    BPM 120
-
-
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
-        [ Time.every (toFloat <| msBetweenQuarterNotes tempo) Tick
+        [ Time.every (toFloat <| msBetweenSixteenthNotes model.tempo) Tick
         , Browser.Events.onKeyDown
             (Json.Decode.field "key" Json.Decode.string
                 |> Json.Decode.andThen
@@ -145,7 +151,6 @@ view : Model -> Html Msg
 view model =
     layout
         [ Element.Font.color white
-        , clipX
         , Element.Font.family
             [ Element.Font.external
                 { url = "https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap"
@@ -157,31 +162,61 @@ view model =
     <|
         column [ centerY, centerX, spacing 60, paddingXY 10 28 ]
             [ displayNotes model
-            , playStopButon model
+            , tempoField model
             ]
 
 
-playStopButon : Model -> Element Msg
-playStopButon model =
-    row [ centerX, spacingXY 40 0 ]
-        [ button
-            [ Element.Border.solid
-            , Element.Border.color white
-            , Element.Border.rounded 10
-            , Element.Border.width 2
-            , padding 10
-            ]
-            { onPress = Just StartStop
-            , label =
-                case model of
-                    On _ ->
-                        text "Stop"
-
-                    Off ->
-                        text "Start"
-            }
-        , text <| "Tempo: " ++ String.fromInt (getBpm tempo)
+tempoField : Model -> Element Msg
+tempoField model =
+    -- text <| "Tempo: " ++ String.fromInt (getBpm tempo)
+    Element.Input.slider
+        [ center
+        , width fill
+        , behindContent
+            (el
+                [ width fill
+                , height (px 1)
+                , centerY
+                , Element.Background.color white
+                ]
+                Element.none
+            )
         ]
+        { onChange = ChangeTempo
+        , label = Element.Input.labelLeft [ moveUp 6 ] <| text "Tempo : "
+        , min = 30
+        , max = 180
+        , step = Just 2
+        , thumb =
+            Element.Input.thumb
+                [ above <| el [ centerX, moveUp 8 ] <| text <| fromInt <| getBpm <| model.tempo
+                , height <| px 10
+                , width <| px 10
+                , Element.Border.rounded 4
+                , Element.Background.color white
+                ]
+        , value = model.tempo |> getBpm |> toFloat
+        }
+
+
+startStopButton : Model -> Element Msg
+startStopButton model =
+    button
+        [ Element.Border.solid
+        , Element.Border.color white
+        , Element.Border.rounded 10
+        , Element.Border.width 2
+        , padding 10
+        ]
+        { onPress = Just StartStop
+        , label =
+            case model.state of
+                On _ ->
+                    text "Stop"
+
+                Off ->
+                    text "Start"
+        }
 
 
 displayNotes : Model -> Element Msg
@@ -274,7 +309,7 @@ commonNoteStyle note =
 
 currentNoteStyling : Model -> Note -> List (Attribute Msg)
 currentNoteStyling model note =
-    case model of
+    case model.state of
         On on ->
             [ if note.sixteenth == on.sixteenth then
                 Element.Background.color yellow

@@ -12,6 +12,14 @@ getBpm tempo =
             bpm
 
 
-msBetweenQuarterNotes : Tempo -> Int
-msBetweenQuarterNotes tempo =
-    1000 // (getBpm tempo // 60) // 4
+msBetweenSixteenthNotes : Tempo -> Int
+msBetweenSixteenthNotes tempo =
+    let
+        quarterNotesPerMinute = getBpm tempo
+        sixteenthNotesPerMinute = quarterNotesPerMinute * 4
+        sixteenthNotesPerSecond = sixteenthNotesPerMinute // 60
+        secondsBetweenSixteenth = 1 / toFloat sixteenthNotesPerSecond
+        -- secondsBetweenSixteenth = minutesBetweenSixteenth * 60
+        msBetweenSixteenth = secondsBetweenSixteenth * 1000
+    in
+    floor msBetweenSixteenth
