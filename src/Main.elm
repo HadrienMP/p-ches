@@ -163,6 +163,7 @@ view model =
         column [ centerY, centerX, spacing 60, paddingXY 10 28 ]
             [ displayNotes model
             , tempoField model
+            , startStopButton model
             ]
 
 
