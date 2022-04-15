@@ -128,23 +128,6 @@ type alias Note =
     }
 
 
-notes : List Note
-notes =
-    List.range 1 16
-        |> List.map
-            (\sixteenth ->
-                { sixteenth = sixteenth
-                , label =
-                    if modBy 4 sixteenth == 1 then
-                        sixteenth // 4 |> (+) 1 |> String.fromInt
-
-                    else
-                        modBy 4 (sixteenth - 1) + 1 |> String.fromInt
-                , quarter = modBy 4 sixteenth == 1
-                }
-            )
-
-
 view : Model -> Html Msg
 view model =
     layout
