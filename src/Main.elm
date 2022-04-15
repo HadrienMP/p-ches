@@ -238,7 +238,7 @@ displayNotes model =
         ]
         [ row [ centerX, height <| px 22 ]
             [ jojo [ alignTop ] { sixteenth = 1, label = "1", quarter = True } ]
-        , row [ centerX, spacing 66, height <| px 20 ]
+        , row [ centerX, spacing 70, height <| px 20 ]
             [ jojo [] { sixteenth = 16, label = "4", quarter = False }
             , jojo [] { sixteenth = 2, label = "2", quarter = False }
             ]
@@ -262,7 +262,7 @@ displayNotes model =
             [ jojo [] { sixteenth = 11, label = "3", quarter = False }
             , jojo [] { sixteenth = 7, label = "3", quarter = False }
             ]
-        , row [ centerX, alignTop, spacing 66, height <| px 20 ]
+        , row [ centerX, alignTop, spacing 70, height <| px 20 ]
             [ jojo [] { sixteenth = 10, label = "2", quarter = False }
             , jojo [] { sixteenth = 8, label = "4", quarter = False }
             ]
