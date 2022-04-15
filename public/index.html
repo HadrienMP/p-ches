@@ -34,7 +34,7 @@
                 .map(s => ({ [s]: new Howl({ src: `/sound/${s}.wav` }) }))
                 .reduce((a, b) => ({ ...a, ...b }), {});
 
-        app.ports.play.subscribe(soundName => sounds[soundName].play());
+        app.ports.playPort.subscribe(soundName => sounds[soundName].play());
 
         const play = (sound) => {
             sound.stop();

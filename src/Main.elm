@@ -1,8 +1,8 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Browser
 import Browser.Events
-import ColorPalette exposing (white, yellow)
+import ColorPalette exposing (white, yellow, black)
 import Element exposing (..)
 import Element.Background
 import Element.Border
@@ -12,12 +12,10 @@ import Element.Region
 import Html exposing (Html)
 import Json.Decode exposing (succeed)
 import Random
+import Sounds exposing (Sound(..), play)
 import String exposing (fromInt)
 import Tempo exposing (Tempo(..), getBpm, msBetweenSixteenthNotes)
 import Time
-
-
-port play : String -> Cmd msg
 
 
 main : Program () Model Msg
@@ -51,7 +49,7 @@ type alias Model =
 
 type Msg
     = Tick Time.Posix
-    | Stab
+    | PlayStab
     | StartStop
     | ChangeTempo Float
     | GotTargetStab Int
@@ -86,17 +84,17 @@ update msg model =
 
                 command =
                     if isFirstQuarter then
-                        play "OH"
+                        play OpenHat
 
                     else if isQuarter then
-                        play "CH"
+                        play ClosedHat
 
                     else
                         Cmd.none
 
                 crashCommand =
                     if on.targetStab == Just nextSixteenth then
-                        play "crash"
+                        play Crash
 
                     else
                         Cmd.none
@@ -105,8 +103,8 @@ update msg model =
             , Cmd.batch [ command, crashCommand ]
             )
 
-        ( _, Stab ) ->
-            ( model, play "stab" )
+        ( _, PlayStab ) ->
+            ( model, play Stab )
 
         ( On _, StartStop ) ->
             ( { model | state = Off }, Cmd.none )
@@ -119,7 +117,7 @@ update msg model =
         ( Off, StartStop ) ->
             ( { model | state = On { sixteenth = 1, targetStab = Nothing } }
             , Cmd.batch
-                [ play "OH"
+                [ play OpenHat
                 , Random.generate GotTargetStab <| Random.int 1 16
                 ]
             )
@@ -150,7 +148,7 @@ subscriptions model =
                     (\key ->
                         case key of
                             "Enter" ->
-                                succeed Stab
+                                succeed PlayStab
 
                             " " ->
                                 succeed StartStop
@@ -259,7 +257,7 @@ displayNotes model =
                 { label =
                     image [ width <| px 100 ]
                         { src = "/img/peach.png", description = "peach" }
-                , onPress = Just Stab
+                , onPress = Just PlayStab
                 }
         ]
         [ row [ centerX, height <| px 22 ]
@@ -345,7 +343,7 @@ currentNoteStyling model note =
                 []
             )
                 ++ (if Just note.sixteenth == on.targetStab then
-                        [ Element.Background.color white ]
+                        [ Element.Background.color white, Element.Font.color black ]
 
                     else
                         []
