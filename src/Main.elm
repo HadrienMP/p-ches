@@ -112,7 +112,9 @@ update msg model =
             ( { model | state = Off }, Cmd.none )
 
         ( On on, GotTargetStab targetStab ) ->
-            ( { model | state = On { on | targetStab = Debug.log "t" targetStab |> Just } }, Cmd.none )
+            ( { model | state = On { on | targetStab = Just targetStab } }
+            , Cmd.none
+            )
 
         ( Off, StartStop ) ->
             ( { model | state = On { sixteenth = 1, targetStab = Nothing } }

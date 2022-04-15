@@ -33,7 +33,6 @@
             ['CH', 'OH', 'stab', 'crash']
                 .map(s => ({ [s]: new Howl({ src: `/sound/${s}.wav` }) }))
                 .reduce((a, b) => ({ ...a, ...b }), {});
-        console.log(sounds);
 
         app.ports.play.subscribe(soundName => sounds[soundName].play());
 
