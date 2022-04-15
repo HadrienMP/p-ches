@@ -11,6 +11,7 @@ import Element.Input exposing (button)
 import Element.Region
 import Html exposing (Html)
 import Json.Decode exposing (succeed)
+import Random
 import String exposing (fromInt)
 import Tempo exposing (Tempo(..), getBpm, msBetweenSixteenthNotes)
 import Time
@@ -34,7 +35,7 @@ main =
 
 
 type alias OnModel =
-    { sixteenth : Int }
+    { sixteenth : Int, targetStab : Maybe Int }
 
 
 type State
@@ -53,6 +54,7 @@ type Msg
     | Stab
     | StartStop
     | ChangeTempo Float
+    | GotTargetStab Int
 
 
 
@@ -91,8 +93,17 @@ update msg model =
 
                     else
                         Cmd.none
+
+                crashCommand =
+                    if on.targetStab == Just nextSixteenth then
+                        play "crash"
+
+                    else
+                        Cmd.none
             in
-            ( { model | state = On { on | sixteenth = nextSixteenth } }, command )
+            ( { model | state = On { on | sixteenth = nextSixteenth } }
+            , Cmd.batch [ command, crashCommand ]
+            )
 
         ( _, Stab ) ->
             ( model, play "stab" )
@@ -100,8 +111,16 @@ update msg model =
         ( On _, StartStop ) ->
             ( { model | state = Off }, Cmd.none )
 
+        ( On on, GotTargetStab targetStab ) ->
+            ( { model | state = On { on | targetStab = Debug.log "t" targetStab |> Just } }, Cmd.none )
+
         ( Off, StartStop ) ->
-            ( { model | state = On { sixteenth = 1 } }, play "OH" )
+            ( { model | state = On { sixteenth = 1, targetStab = Nothing } }
+            , Cmd.batch
+                [ play "OH"
+                , Random.generate GotTargetStab <| Random.int 1 16
+                ]
+            )
 
         ( _, ChangeTempo float ) ->
             ( { model | tempo = float |> floor |> BPM }, Cmd.none )
@@ -117,7 +136,12 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every (toFloat <| msBetweenSixteenthNotes model.tempo) Tick
+        [ case model.state of
+            On _ ->
+                Time.every (toFloat <| msBetweenSixteenthNotes model.tempo) Tick
+
+            Off ->
+                Sub.none
         , Browser.Events.onKeyDown
             (Json.Decode.field "key" Json.Decode.string
                 |> Json.Decode.andThen
@@ -169,7 +193,6 @@ view model =
 
 tempoField : Model -> Element Msg
 tempoField model =
-    -- text <| "Tempo: " ++ String.fromInt (getBpm tempo)
     Element.Input.slider
         [ center
         , width fill
@@ -274,17 +297,18 @@ displayNotes model =
 
 displayNote : Model -> List (Attribute Msg) -> Note -> Element Msg
 displayNote model attributes note =
-    el (attributes ++ commonNoteStyle note ++ currentNoteStyling model note) <|
+    el (attributes ++ commonNoteStyle model note) <|
         text note.label
 
 
-commonNoteStyle : Note -> List (Attribute msg)
-commonNoteStyle note =
+commonNoteStyle : Model -> Note -> List (Attribute Msg)
+commonNoteStyle model note =
     [ Element.Font.center
     , Element.Border.solid
     , Element.Border.color white
     , Element.Border.rounded 100
     ]
+        ++ currentNoteStyling model note
         ++ (case modBy 4 (note.sixteenth - 1) of
                 0 ->
                     [ Element.Border.width 4
@@ -312,12 +336,18 @@ currentNoteStyling : Model -> Note -> List (Attribute Msg)
 currentNoteStyling model note =
     case model.state of
         On on ->
-            [ if note.sixteenth == on.sixteenth then
-                Element.Background.color yellow
+            (if note.sixteenth == on.sixteenth then
+                [ Element.Background.color yellow ]
 
-              else
-                Element.Font.center
-            ]
+             else
+                []
+            )
+                ++ (if Just note.sixteenth == on.targetStab then
+                        [ Element.Background.color white ]
+
+                    else
+                        []
+                   )
 
         Off ->
             []

@@ -6,13 +6,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"> 
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         html {
             background-color: #4158D0;
             background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
         }
+
         *:focus {
             box-shadow: none !important;
         }
@@ -27,20 +28,14 @@
     <script src="/js/elm.js"></script>
     <script>
         const app = Elm.Main.init({ node: document.querySelector('main') })
-        
-        var closedHat = new Howl({ src: ['/sound/CH.wav'] });
-        var openHat = new Howl({ src: ['/sound/OH.wav'] });
-        var stab = new Howl({ src: ['/sound/stab.wav'] });
-        
-        app.ports.play.subscribe(soundName => {
-            if (soundName === 'OH') {
-                openHat.play();
-            } else if (soundName === 'stab') {
-                stab.play();
-            } else {
-                closedHat.play()
-            }
-        });
+
+        const sounds =
+            ['CH', 'OH', 'stab', 'crash']
+                .map(s => ({ [s]: new Howl({ src: `/sound/${s}.wav` }) }))
+                .reduce((a, b) => ({ ...a, ...b }), {});
+        console.log(sounds);
+
+        app.ports.play.subscribe(soundName => sounds[soundName].play());
 
         const play = (sound) => {
             sound.stop();
